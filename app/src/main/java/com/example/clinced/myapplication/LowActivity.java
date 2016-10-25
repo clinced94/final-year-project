@@ -1,12 +1,17 @@
 package com.example.clinced.myapplication;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 //import android.support.v7.app.AppCompatActivity;
 
 /**
@@ -14,40 +19,25 @@ import android.widget.Toast;
  */
 public class LowActivity extends AppCompatActivity {
 
-    ListView listView;
+    public Calendar lowCalendar;
+    public Button lowButton;
+    public String lowDateStr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_low);
 
-        //get listview object
-        listView = (ListView) findViewById(R.id.low_list);
+        lowCalendar = Calendar.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM//yyyy 'at' HH:mm");
+        lowDateStr = "Recorded on " + dateFormat.format(lowCalendar.getTime());
 
-        //define array values for list
-        String [] values = new String [] {"Activity One",
-                "Activity Two", "Activity Three", "Activity Four",
-                "Activity Five", "Activity Six", "Activity Seven",
-                "Activity Eight", "Activity Nine"
+        lowButton = (Button) findViewById(R.id.low_submit);
 
-        };
-
-        //Define a new adapter
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, android.R.id.text1, values);
-
-        //Assign adapter to ListView
-        listView.setAdapter(adapter);
-
-        //Listview click listener
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        lowButton.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                int itemPosition = position;
-                String itemValue = (String) listView.getItemAtPosition(position);
-                Toast.makeText(getApplicationContext(),
-                        "Position:" +itemPosition+ " ListItem:"+ itemValue, Toast.LENGTH_LONG).show();
+            public void onClick(View v) {
+                startActivity(new Intent(LowActivity.this, AfterSubmitActivity.class));
             }
         });
     }

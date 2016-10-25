@@ -1,11 +1,13 @@
 package com.example.clinced.myapplication;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Display;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,8 +21,9 @@ import java.util.Date;
  */
 public class HighActivity extends AppCompatActivity{
 
-    ListView listView;
     public Calendar highCalendar;
+    public String dateStr;
+    public Button highButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,45 +32,19 @@ public class HighActivity extends AppCompatActivity{
 
         highCalendar = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy 'at' HH:mm");
-        String dateStr = "Recorded on " + dateFormat.format(highCalendar.getTime());
+        dateStr = "Recorded on " + dateFormat.format(highCalendar.getTime());
 
-        //TextView textView = (TextView) findViewById(R.id.high_engine_text);
-        //textView.setText(dateStr);
+        highButton = (Button) findViewById(R.id.high_submit);
 
-
-        //get listview object
-        listView = (ListView) findViewById(R.id.high_list);
-
-        //define array values for list
-        String [] values = new String [] {"Activity One",
-                "Activity Two", "Activity Three", "Activity Four",
-                "Activity Five", "Activity Six", "Activity Seven",
-                "Activity Eight", "Activity Nine"
-        };
-
-        //Define a new adapter
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, android.R.id.text1, values);
-
-        //Assign adapter to ListView
-        listView.setAdapter(adapter);
-
-        //Listview click listener
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        highButton.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                int itemPosition = position;
-                String itemValue = (String) listView.getItemAtPosition(position);
-                Toast.makeText(getApplicationContext(),
-                        "Position:" +itemPosition+ " ListItem:"+ itemValue, Toast.LENGTH_LONG).show();
+            public void onClick(View v) {
+                startActivity(new Intent(HighActivity.this, AfterSubmitActivity.class));
             }
         });
 
 
 
+
     }
-
-
-
 }
