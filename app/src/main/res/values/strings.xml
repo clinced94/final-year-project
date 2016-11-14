@@ -1,4 +1,16 @@
 <resources>
     <string name="app_name">My Application</string>
-    <string name="Placeholder_text">Enter activity here</string>
+    <string name="placeholder_text">placeholder </string>
+
+    <string name="engine_question">How's Your Engine Running?</string>
+    <string name="select_option">Please select an option below</string>
+    <string name="low_button">Low</string>
+    <string name="high_button">High</string>
+    <string name="just_right_button">Just Right</string>
+    <string name="engine_is_high">Your engine is running a bit high</string>
+    <string name="engine_is_low">Your engine is running a bit low</string>
+    <string name="what_activity">What activity are you going to do to make it run just right?</string>
+    <string name="engine_is_right">Woo! Your engine is running just right.</string>
+    <string name="hint">Enter activity here</string>
+    <string name="finished_button">Finished</string>
 </resources>

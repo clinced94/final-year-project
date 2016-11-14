@@ -13,10 +13,13 @@ public class MainActivity extends AppCompatActivity {
     private Button normButton;
     private Button highButton;
 
+    DatabaseHelper myDab;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        myDab = new DatabaseHelper(this);
 
         lowButton = (Button) findViewById(R.id.low_button);
         normButton = (Button) findViewById(R.id.norm_button);
