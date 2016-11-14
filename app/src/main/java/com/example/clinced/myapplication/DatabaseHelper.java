@@ -147,7 +147,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //retrieve all users
     public List<User> getAllUsers() {
 
-        SQLiteDatabase dab = this.getReadableDatabase()
+        SQLiteDatabase dab = this.getReadableDatabase();
 
         List<User> allUsers = new ArrayList<User>();
         String userSelect = "SELECT * FROM " + USER_TABLE_NAME;

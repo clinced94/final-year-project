@@ -2,7 +2,7 @@
     <string name="app_name">My Application</string>
     <string name="placeholder_text">placeholder </string>
 
-    <string name="engine_question">How's Your Engine Running?</string>
+    <string name="engine_question">How\'s Your Engine Running?</string>
     <string name="select_option">Please select an option below</string>
     <string name="low_button">Low</string>
     <string name="high_button">High</string>
