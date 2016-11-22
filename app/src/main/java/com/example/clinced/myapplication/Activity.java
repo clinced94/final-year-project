@@ -10,21 +10,24 @@ public class Activity {
     String name;
     String effect;
     int uses;
+    int activityTypeId;
 
     //constructors
     public Activity() {
 
     }
 
-    public Activity(int id, String name) {
+    public Activity(int id, String name, int activityTypeId) {
         this.id = id;
         this.name = name;
+        this.activityTypeId = activityTypeId;
     }
 
-    public Activity(int id, String name, String effect) {
+    public Activity(int id, String name, String effect, int activityTypeId) {
         this.id = id;
         this.name = name;
         this.effect = effect;
+        this.activityTypeId = activityTypeId;
     }
 
 
@@ -45,6 +48,10 @@ public class Activity {
         this.uses = uses;
     }
 
+    public void setActivityTypeId(int activityTypeId) {
+        this.activityTypeId = activityTypeId;
+    }
+
     //getters
     public int getId() {
         return this.id;
@@ -60,5 +67,9 @@ public class Activity {
 
     public int getUses() {
         return this.uses;
+    }
+
+    public int getActivityTypeId() {
+        return this.activityTypeId;
     }
 }

@@ -4,10 +4,14 @@ package com.example.clinced.myapplication;
         import android.content.Context;
         import android.database.Cursor;
         import android.database.sqlite.SQLiteDatabase;
+        import android.database.sqlite.SQLiteDatabaseLockedException;
         import android.database.sqlite.SQLiteOpenHelper;
 
+        import java.util.Date;
+        import java.text.SimpleDateFormat;
         import java.util.ArrayList;
         import java.util.List;
+        import java.util.Locale;
 
 /**
  * Created by clinced on 25/10/16.
@@ -19,13 +23,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final int DATABASE_VERSION = 1;
 
     //database name
-    public static final String DATABASE_NAME = "Users.db";
+    public static final String DATABASE_NAME = "Alert.db";
 
     //table names
     public static final String USER_TABLE_NAME = "user_table";
     public static final String ACTIVITY_TABLE_NAME = "activity_table";
     public static final String ACTIVITY_LOGGED_TABLE_NAME = "activity_logged_table";
     public static final String ACTIVITY_REVIEWED_TABLE_NAME = "activity_reviewed_table";
+    public static final String ACTIVITY_TYPE_NAME  = "activity_type_name";
 
 
     //common column names
@@ -41,12 +46,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //activity column names
     public static final String COL_EFFECT = "effect";
     public static final String COL_USED = "times_used";
+    public static final String COL_ACTIVITY_TYPE_ID = "activity_type";
 
     //activity logged and reviewed names
     public static final String COL_USER_ID = "user_id";
     public static final String COL_ACTIVITY_ID = "activity_id";
     public static final String COL_DATE = "date";
     public static final String COL_RATING = "rating";
+    public static final String COL_TYPE = "type_name";
 
 
     //table create statements
@@ -59,7 +66,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //activity table create statement
     private static final String CREATE_TABLE_ACTIVITY = "CREATE TABLE " + ACTIVITY_TABLE_NAME
             + "(" + COL_ID + " INTEGER PRIMARY KEY," + COL_NAME + " TEXT," + COL_EFFECT
-            + " TEXT," + COL_USED + " INTEGER," + COL_CREATED_AT + " DATETIME" + ")";
+            + " TEXT," + COL_USED + " INTEGER," + COL_ACTIVITY_TYPE_ID + "INTEGER," + COL_CREATED_AT + " DATETIME" + ")";
 
     //activity logged table create statement
     private static final String CREATE_TABLE_ACTIVITY_LOGGED = "CREATE TABLE " + ACTIVITY_LOGGED_TABLE_NAME
@@ -70,6 +77,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_ACTIVITY_REVIEWED = "CREATE TABLE " + ACTIVITY_REVIEWED_TABLE_NAME
             + "(" + COL_USER_ID + " INTEGER PRIMARY KEY," + COL_DATE + " DATETIME,"
             + COL_ACTIVITY_ID + " INTEGER PRIMARY KEY," + COL_RATING + " TEXT" + ")";
+
+    private static final String CREATE_TABLE_ACTIVITY_TYPE = "CREATE TABLE " + ACTIVITY_TYPE_NAME
+            + "(" + COL_ID + "INTEGER PRIMARY KEY," + COL_TYPE + "TEXT" + ")";
+
+
+
 
     public DatabaseHelper(Context context) {
 
@@ -84,6 +97,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         dab.execSQL(CREATE_TABLE_ACTIVITY);
         dab.execSQL(CREATE_TABLE_ACTIVITY_LOGGED);
         dab.execSQL(CREATE_TABLE_ACTIVITY_REVIEWED);
+        dab.execSQL(CREATE_TABLE_ACTIVITY_TYPE);
 
     }
 
@@ -95,6 +109,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         dab.execSQL("DROP TABLE IF EXISTS " + ACTIVITY_TABLE_NAME);
         dab.execSQL("DROP TABLE IF EXISTS " + ACTIVITY_LOGGED_TABLE_NAME);
         dab.execSQL("DROP TABLE IF EXISTS " + ACTIVITY_REVIEWED_TABLE_NAME);
+        dab.execSQL("DROP TABLE IF EXISTS " + ACTIVITY_TYPE_NAME);
 
         //then create new tables
         onCreate(dab);
@@ -115,9 +130,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AGE, user.getAge());
         contentValues.put(COL_USES_MONTH, user.getUsesMonth());
         contentValues.put(COL_USES, user.getUses());
+        contentValues.put(COL_CREATED_AT, getDateTime());
 
-        long user_id = dab.insert(USER_TABLE_NAME, null, contentValues);
-        return user_id;
+        return dab.insert(USER_TABLE_NAME, null, contentValues);
+
     }
 
 
@@ -164,11 +180,146 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 user.setCreatedAt(cursor.getString(cursor.getColumnIndex(COL_CREATED_AT)));
                 user.setUsesThisMonth(cursor.getInt(cursor.getColumnIndex(COL_USES_MONTH)));
                 user.setUses(cursor.getInt(cursor.getColumnIndex(COL_USES)));
+
+                allUsers.add(user);
             } while (cursor.moveToNext());
         }
         cursor.close();
 
         return allUsers;
+    }
+
+    //update a user
+    public int updateUser(User user) {
+
+        SQLiteDatabase dab = this.getWritableDatabase();
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(COL_NAME, user.getName());
+        contentValues.put(COL_AGE, user.getAge());
+        contentValues.put(COL_USES_MONTH, user.getUsesMonth());
+        contentValues.put(COL_USES, user.getUses());
+
+        //updating the row
+        return dab .update(USER_TABLE_NAME, contentValues, COL_ID + " = ?",
+                new String[] {
+                        String.valueOf(user.getId())
+                });
+    }
+
+
+    //delete user
+    public void deleteUser(long userId) {
+        SQLiteDatabase dab = this.getWritableDatabase();
+        dab.delete(USER_TABLE_NAME, COL_ID + " = ?",
+                new String[] {String.valueOf(userId)});
+    }
+
+    //END OF USER
+
+
+    //ACTIVITY
+
+    //creating activity
+    public long createActivity(Activity activity) {
+
+        SQLiteDatabase dab = this.getWritableDatabase();
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(COL_NAME, activity.getName());
+        contentValues.put(COL_EFFECT, activity.getEffect());
+        contentValues.put(COL_ACTIVITY_TYPE_ID, activity.getActivityTypeId());
+        contentValues.put(COL_USES, activity.getUses());
+        contentValues.put(COL_CREATED_AT, getDateTime());
+
+        return dab.insert(ACTIVITY_TABLE_NAME, null, contentValues);
+    }
+
+    //retrieve activity
+    public Activity getActivity(long activityId) {
+
+        SQLiteDatabase dab = this.getReadableDatabase();
+
+        String activitySelect = "SELECT * FROM " + ACTIVITY_TABLE_NAME + " WHERE " + COL_ID +
+                " = " + activityId;
+
+        Cursor cursor = dab.rawQuery(activitySelect, null);
+
+        Activity activity = new Activity();
+        activity.setId(cursor.getInt(cursor.getColumnIndex(COL_ID)));
+        activity.setName(cursor.getString(cursor.getColumnIndex(COL_NAME)));
+        activity.setActivityTypeId(cursor.getInt(cursor.getColumnIndex(COL_ACTIVITY_TYPE_ID)));
+        activity.setEffect(cursor.getString(cursor.getColumnIndex(COL_EFFECT)));
+        activity.setUses(cursor.getInt(cursor.getColumnIndex(COL_USES)));
+
+        cursor.close();
+        return activity;
+    }
+
+
+
+    //retrieve all activities
+    public List<Activity> getAllActivities() {
+
+        SQLiteDatabase dab = this.getReadableDatabase();
+
+        List<Activity> allActivities = new ArrayList<>();
+        String activitySelect = "SELECT * FROM " + ACTIVITY_TABLE_NAME;
+
+        Cursor cursor = dab.rawQuery(activitySelect, null);
+
+        if(cursor.moveToFirst()) {
+
+            do {
+                Activity activity = new Activity();
+                activity.setId(cursor.getInt(cursor.getColumnIndex(COL_ID)));
+                activity.setName(cursor.getString(cursor.getColumnIndex(COL_NAME)));
+                activity.setActivityTypeId(cursor.getInt(cursor.getColumnIndex(COL_ACTIVITY_TYPE_ID)));
+                activity.setEffect(cursor.getString(cursor.getColumnIndex(COL_EFFECT)));
+                activity.setUses(cursor.getInt(cursor.getColumnIndex(COL_USES)));
+
+                allActivities.add(activity);
+            }while(cursor.moveToNext());
+        }
+
+        cursor.close();
+
+        return allActivities;
+    }
+
+
+    public int updateActivity(Activity activity) {
+
+        SQLiteDatabase dab = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(COL_NAME, activity.getName());
+        contentValues.put(COL_ACTIVITY_TYPE_ID, activity.getActivityTypeId());
+        contentValues.put(COL_EFFECT, activity.getEffect());
+        contentValues.put(COL_USES, activity.getUses());
+
+        //update row
+        return dab.update(ACTIVITY_TABLE_NAME, contentValues, COL_ID + " = ?",
+                new String[] {
+                        String.valueOf(activity.getId())
+                });
+    }
+
+
+    //delete activity
+    public void deleteActivity(long activityId) {
+
+        SQLiteDatabase dab = this.getWritableDatabase();
+        dab.delete(ACTIVITY_TABLE_NAME, COL_ID + " = ?",
+                new String[] {String.valueOf(activityId)});
+    }
+
+
+
+    private String getDateTime() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                "yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        Date date = new Date();
+        return dateFormat.format(date);
     }
 
 
